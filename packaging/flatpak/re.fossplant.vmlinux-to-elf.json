@@ -1,7 +1,7 @@
 {
     "app-id": "re.fossplant.vmlinux-to-elf",
     "runtime": "org.gnome.Platform",
-    "runtime-version": "49",
+    "runtime-version": "50",
     "sdk": "org.gnome.Sdk",
     "command": "vmlinux-to-elf-gui",
     "finish-args": [
@@ -68,36 +68,14 @@
             ]
         },
         {
-            "name": "python3-pygobject",
-            "buildsystem": "simple",
-            "build-commands": [
-                "pip3 install --verbose --exists-action=i --no-index --find-links=\"file://${PWD}\" --prefix=${FLATPAK_DEST} \"pygobject>=3.54.5\" --no-build-isolation"
-            ],
-            "sources": [
-                {
-                    "type": "file",
-                    "url": "https://files.pythonhosted.org/packages/22/d9/1728840a22a4ef8a8f479b9156aa2943cd98c3907accd3849fb0d5f82bfd/pycairo-1.29.0.tar.gz",
-                    "sha256": "f3f7fde97325cae80224c09f12564ef58d0d0f655da0e3b040f5807bd5bd3142"
-                },
-                {
-                    "type": "file",
-                    "url": "https://files.pythonhosted.org/packages/1f/86/b87f8d9ecb01effa2b17319b9b0a8852c29374ab7c5268a44597cb1605c7/pygobject-3.56.0.tar.gz",
-                    "sha256": "4fbb5bf47524e01026f8e309dd54233eb0f75f2281392c5bf0df5d9041cc7891"
-                }
-            ]
-        },
-        {
             "name": "vmlinux-to-elf",
             "buildsystem": "simple",
             "build-commands": [
                 "mkdir -p /app/bin/",
                 "pip3 install --verbose --exists-action=i --no-index --find-links=\"file://${PWD}\" --prefix=${FLATPAK_DEST} \".\" --no-build-isolation",
-                "mkdir -p /app/share/icons/hicolor/scalable/apps/",
-                "mkdir -p /app/share/metainfo/",
-                "mkdir -p /app/share/applications/",
-                "cp -r ./vmlinux_to_elf/ui/assets/re.fossplant.vmlinux-to-elf.svg /app/share/icons/hicolor/scalable/apps/",
-                "cp -r ./vmlinux_to_elf/ui/assets/re.fossplant.vmlinux-to-elf.metainfo.xml /app/share/metainfo/",
-                "cp -r ./vmlinux_to_elf/ui/assets/re.fossplant.vmlinux-to-elf.desktop /app/share/applications/",
+                "install -Dm644 ./vmlinux_to_elf/ui/assets/re.fossplant.vmlinux-to-elf.svg -t /app/share/icons/hicolor/scalable/apps/",
+                "install -Dm644 ./vmlinux_to_elf/ui/assets/re.fossplant.vmlinux-to-elf.metainfo.xml -t /app/share/metainfo/",
+                "install -Dm644 ./vmlinux_to_elf/ui/assets/re.fossplant.vmlinux-to-elf.desktop -t /app/share/applications/",
                 "rm -rf ./vmlinux_to_elf/ *.g* packaging pics *.lock *.md *.yaml *.toml LICENSE"
             ],
             "sources": [
