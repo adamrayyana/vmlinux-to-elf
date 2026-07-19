@@ -6,7 +6,10 @@ from sys import stderr
 
 from vmlinux_to_elf.core.architecture_detecter import ArchitectureGuessError
 from vmlinux_to_elf.core.auto_unpack import VmlinuzDecompressor
-from vmlinux_to_elf.core.kallsyms import KallsymsFinder
+from vmlinux_to_elf.core.kallsyms import (
+    KallsymsFinder,
+    KallsymsNotFoundException,
+)
 
 
 def main():
@@ -39,8 +42,8 @@ def main():
     )
     args.add_argument(
         '--base-address',
-        help='Force overriding the base address used for converting '
-        + 'relocations to relative relocations with this integer value (rather than auto-detect)',
+        help='Force the virtual address represented by file offset 0; required '
+        + 'for raw runtime dumps with Linux 7.x PC-relative kallsyms',
         type=lambda st: int(st, 16),
         metavar='HEX_NUMBER',
     )
@@ -71,6 +74,10 @@ def main():
                 + '(use --help for its precise specification).'
             )
             raise
+
+        except KallsymsNotFoundException as error:
+            logging.critical(f'[!] {error}')
+            raise SystemExit(1)
 
         kallsyms.print_symbols_debug()
 

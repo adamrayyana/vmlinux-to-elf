@@ -21,6 +21,10 @@ Usage:
 # Command line:
 vmlinux-to-elf <input_kernel.bin> <output_kernel.elf>
 
+# Linux 7.x raw runtime memory dump (file offset 0 is runtime _text):
+vmlinux-to-elf --base-address <runtime_text_address> \
+    <input_kernel.bin> <output_kernel.elf>
+
 # Command line, list symbol addresses only:
 kallsyms-finder <input_kernel.bin> # If installed with uv
 vmlinux-to-elf.kallsyms-finder # If installed with snap
@@ -204,4 +208,3 @@ Don't hesitate to [open an issue](https://github.com/marin-m/vmlinux-to-elf/issu
 Please privilege the current Github repository issues and pull requests in priority for reporting bugs, asking questions, etc.
 
 Alternatively, you can use [this matrix channel](https://matrix.to/#/#vmlinux-to-elf:matrix.org) if needing directly contact with the author of the project, but please reserve this as a secondary channel e.g for sending kernel samples, what goes here otherwise is more likely to be lost.
-

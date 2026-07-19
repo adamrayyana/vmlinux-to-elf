@@ -1349,6 +1349,53 @@ class KallsymsFinder:
         CONFIG_KALLSYMS_BASE_RELATIVE)
     """
 
+    def _pc_relative_base_address(
+        self, address_byte_size: int, endianness_marker: str
+    ) -> int:
+        if self.explicit_base_address is not None:
+            logging.info(
+                '[+] Using supplied base address for PC-relative kallsyms: '
+                f'0x{self.explicit_base_address:x}'
+            )
+            return self.explicit_base_address
+
+        if not self.kernel_img.startswith(b'\x7fELF'):
+            raise KallsymsNotFoundException(
+                'Linux 7.x PC-relative kallsyms in a raw image require '
+                '--base-address (the runtime address represented by file offset 0)'
+            )
+
+        addr_marker = {4: 'I', 8: 'Q'}[address_byte_size]
+        addr_size = address_byte_size
+        phdr_field_offset = 0x18 + address_byte_size
+
+        if phdr_field_offset + addr_size > len(self.kernel_img):
+            raise KallsymsNotFoundException(
+                'Truncated ELF header while reading PC-relative kallsyms'
+            )
+
+        (phdr_offset,) = unpack_from(
+            endianness_marker + addr_marker,
+            self.kernel_img,
+            phdr_field_offset,
+        )
+        base_field_offset = phdr_offset + (
+            0x10 if self.is_64_bits else 0x08
+        )
+
+        if base_field_offset + addr_size > len(self.kernel_img):
+            raise KallsymsNotFoundException(
+                'Invalid ELF program-header offset while reading '
+                'PC-relative kallsyms'
+            )
+
+        (base_address,) = unpack_from(
+            endianness_marker + addr_marker,
+            self.kernel_img,
+            base_field_offset,
+        )
+        return base_address
+
     def find_kallsyms_addresses_or_symbols(self):
         # --- New checks here
 
@@ -1660,20 +1707,8 @@ class KallsymsFinder:
                 if not (_text <= 0 and last >= 0) and can_skip:
                     continue
 
-                # reading the vaddr from the first segment.
-                # this should be at fixed offsets, but calculating this manually
-                # in case that ever turns out to be invalid.
-                addr_marker = {4: 'I', 8: 'Q'}[address_byte_size]
-                (phdr_offset,) = unpack_from(
-                    endianness_marker + addr_marker,
-                    self.kernel_img,
-                    0x18 + address_byte_size,
-                )
-                phdr_offset += 0x10 if self.is_64_bits else 0x08
-                (base_address,) = unpack_from(
-                    endianness_marker + addr_marker,
-                    self.kernel_img,
-                    phdr_offset,
+                base_address = self._pc_relative_base_address(
+                    address_byte_size, endianness_marker
                 )
                 tentative_addresses_or_offsets = [
                     base_address + offset - _text + idx * offset_byte_size
